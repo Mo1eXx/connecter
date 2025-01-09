@@ -1,5 +1,5 @@
 import flet as ft
-from ipName import open_text
+from ipName import connect_pc, open_text
 
 all_ip = open_text('test.txt')
 
@@ -43,8 +43,8 @@ class TextView(ft.ListView):
         super().__init__()
         self.persons = persons
         self.button = button
-        self.my_build(self.persons)
         self.selected_row = None
+        self.my_build(self.persons)
 
     def my_build(self, persons):
         self.controls.clear()
@@ -76,15 +76,14 @@ class TextView(ft.ListView):
             ]
         ))
         container = ft.Container(
-            row,
-            on_hover=lambda e, r=row: self.on_hover(e, r),
+            row
         )
+        container.on_hover=lambda e, c=container: self.on_hover(e, c)
         container.on_click = lambda e, с=container: self.on_click(e, с)
         return container
 
     def on_click(self, e, container):
-
-        if self.selected_row is not None:
+        if self.selected_row:
             self.selected_row.bgcolor = ft.colors.TRANSPARENT
             self.selected_row.update()
         self.selected_row = container
@@ -101,8 +100,8 @@ class TextView(ft.ListView):
         row.update()
 
     def get_selected_ip(self):
-        if self.selected_row is not None:
-            index = self.controls.index(self.selected_row)
+        if self.selected_row:
+            index = self.controls[0].content.controls.index(self.selected_row)
             return self.persons[index]['ip']
         return None
 
@@ -114,7 +113,7 @@ def main(page: ft.Page):
     page.window.center()
     page.title = 'UPF List'
     button_disk = BaseButton(
-        icon=ft.icons.FOLDER_SHARED,
+        icon=ft.Icons.FOLDER_SHARED,
     )
     text_view = TextView(persons, button_disk)
     text_search = TextSearch(persons, text_view)
@@ -122,6 +121,7 @@ def main(page: ft.Page):
     def on_keyboard_button_click(e):
         ip = text_view.get_selected_ip()
         if ip:
+            print(ip)
             page.add(ft.Text(f'Connecting to {ip}'))
 
     def on_connect_button_click(e):
@@ -130,11 +130,11 @@ def main(page: ft.Page):
             page.add(ft.Text(f'Connecting to {ip}'))
 
     connect_button = BaseButton(
-        icon=ft.icons.CONNECTED_TV,
+        icon=ft.Icons.CONNECTED_TV,
         on_click=on_connect_button_click
     )
     keyboard_button = BaseButton(
-        icon=ft.icons.KEYBOARD,
+        icon=ft.Icons.KEYBOARD,
         on_click=on_keyboard_button_click
     )
     page.add(
