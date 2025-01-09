@@ -1,20 +1,15 @@
 import flet as ft
+from ipName import open_text
 
+all_ip = open_text('test.txt')
 
-persons = [
-    {
-        'name': 'John',
-        'ip': '137.84.2.178',
-    },
-    {
-        'name': 'Jane',
-        'ip': '237.84.2.178',
-    },
-    {
-        'name': 'Joe',
-        'ip': '337.84.2.178',
-    }
-]
+persons = []
+
+for ip in all_ip:
+    person = {}
+    person['name'] = str(ip)
+    person['ip'] = ip
+    persons.append(person)
 
 
 class TextSearch(ft.TextField):
@@ -25,6 +20,7 @@ class TextSearch(ft.TextField):
         self.on_change = self.update_text_view
 
     def update_text_view(self, e):
+        self.text_view.selected_row = None
         search_term = self.value.lower()
         filtered_persons = [
             person for person in self.persons
@@ -52,33 +48,42 @@ class TextView(ft.ListView):
 
     def my_build(self, persons):
         self.controls.clear()
-        for person in persons:
-            person_name = ft.Text(
-                person['name'],
-                expand=True
-            )
-            person_ip = ft.Text(
-                person['ip'],
-                expand=True
-            )
-            row = ft.Container(ft.Row(
-                [
-                    person_name,
-                    person_ip,
-                    self.button
-                ]
-            ))
+        scrollable = ft.Container(
+            content=ft.Column(
+                controls=[
+                    self.create_persons_row(person) for person in persons
+                ],
+                scroll=ft.ScrollMode.ALWAYS
+            ),
+            height=300
+        )
+        self.controls.append(scrollable)
 
-            container = ft.Container(
-                row,
-                on_hover=lambda e, r=row: self.on_hover(e, r),
-            )
-            container.on_click = lambda e, с=container: self.on_click(e, с)
-            self.controls.append(
-                container,
-            )
+    def create_persons_row(self, person):
+        person_name = ft.Text(
+            person['name'],
+            expand=True
+        )
+        person_ip = ft.Text(
+            person['ip'],
+            expand=True
+        )
+        row = ft.Container(ft.Row(
+            [
+                person_name,
+                person_ip,
+                self.button
+            ]
+        ))
+        container = ft.Container(
+            row,
+            on_hover=lambda e, r=row: self.on_hover(e, r),
+        )
+        container.on_click = lambda e, с=container: self.on_click(e, с)
+        return container
 
     def on_click(self, e, container):
+
         if self.selected_row is not None:
             self.selected_row.bgcolor = ft.colors.TRANSPARENT
             self.selected_row.update()
@@ -103,10 +108,10 @@ class TextView(ft.ListView):
 
 
 def main(page: ft.Page):
-    #page.theme_mode = ft.ThemeMode.DARK
-    page.window_width = 600
-    page.window_height = 400
-    page.window_center()
+    page.theme_mode = ft.ThemeMode.DARK
+    page.window.width = 600
+    page.window.height = 400
+    page.window.center()
     page.title = 'UPF List'
     button_disk = BaseButton(
         icon=ft.icons.FOLDER_SHARED,
